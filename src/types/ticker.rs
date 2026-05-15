@@ -1,7 +1,6 @@
 
 // Imports
-use bevy::ecs::component::Component;
-use bevy::reflect::Reflect;
+use bevy::prelude::*;
 use bevy::time::Timer;
 
 /// By themselves, tickers can be used to create simple timers.  Although they are best used in conjunction

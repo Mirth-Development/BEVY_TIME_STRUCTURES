@@ -1,9 +1,8 @@
 
 // Imports
-use bevy::app::{App, Plugin};
-use crate::definition_ticker::Ticker;
-use crate::definition_chronolog::Chronolog;
-use crate::systems::SystemsForTimeStructures;
+use bevy::prelude::*;
+use crate::types::*;
+use crate::systems::*;
 
 /// Structure that acts as the main plugin for all of the time structures, adding this
 /// as a plugin would implement the various timer structure definitions and Bevy systems.
@@ -12,6 +11,6 @@ impl Plugin for TimeStructures {
     fn build(&self, app: &mut App) {
         app.register_type::<Ticker>();
         app.register_type::<Chronolog>();
-        app.add_plugins(SystemsForTimeStructures{});
+        app.add_systems(First, (ticker_ticking, chronolog_ticking).chain());
     }
 }

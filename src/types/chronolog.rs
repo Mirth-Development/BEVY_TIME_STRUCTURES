@@ -1,9 +1,7 @@
 
 // Imports
-use bevy::ecs::component::Component;
-use bevy::reflect::Reflect;
-use bevy::time::{Timer, TimerMode};
-use crate::definition_ticker::Ticker;
+use bevy::prelude::*;
+use crate::types::ticker::Ticker;
 
 /// Used to create timers that can optionally store digits from the hundreds place to the thousandths
 /// place.  Digits can be preset by assigning values to digit properties and timers for each digit
