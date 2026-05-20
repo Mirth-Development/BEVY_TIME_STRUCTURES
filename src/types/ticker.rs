@@ -38,49 +38,58 @@ impl Ticker {
 
     /// Develops a new Ticker using a passed value for its start_value.
     ///
+    /// Valid start values are -100 to 100 (inclusive).
+    /// **Values outside this range will cause a panic.**
+    ///
     /// When a second passes, the timer within the Ticker fires (increases current_value by 1 for each second that passes).
     pub fn new(starting_value: i8) -> Self {
 
-        assert!(starting_value >= -100 && starting_value <= 100, "start_value must be between -100 and 100. Got {}.", starting_value);
+        // Panic Evaluation
+        assert!(starting_value >= -100 && starting_value <= 100, "Starting value must be between -100 and 100. Got {}.", starting_value);
 
         Self {
             start_value:    starting_value,
             current_value:  starting_value,
-            digit:          (starting_value as i16).abs() as i8 % 10,                   // Have to cast a bit extra due to the possibility that start value is i8::MIN (-128 flipping to 128 is out of i8 range).
+            digit:          starting_value.abs() % 10,
             timer:          Timer::from_seconds(1.0, TimerMode::Repeating),
         }
     }
 
     /// Develops a new Ticker using a passed value for its start_value.
     ///
-    /// When a INSERT_VALUE_YOU_PASS_IN_HERE passes, the timer within the Ticker fires (increases current_value by 1 for each INSERT_VALUE_YOU_PASS_IN_HERE that passes).
+    /// Valid start values are -100 to 100 (inclusive).
+    /// **Values outside this range will cause a panic.**
+    ///
+    /// When a INSERT_VALUE_YOU_PASS_IN_HERE second(s) passes, the timer within the Ticker fires (increases current_value by 1 for each INSERT_VALUE_YOU_PASS_IN_HERE that passes).
     pub fn new_with_timer(starting_value: i8, duration: f32) -> Self {
 
-        assert!(starting_value >= -100 && starting_value <= 100, "start_value must be between -100 and 100. Got {}.", starting_value);
+        // Panic Evaluation
+        assert!(starting_value >= -100 && starting_value <= 100, "Starting value must be between -100 and 100 (inclusive). Got {}.", starting_value);
 
         Self {
             start_value:    starting_value,
             current_value:  starting_value,
-            digit:          (starting_value as i16).abs() as i8 % 10,
+            digit:          starting_value.abs() % 10,
             timer:          Timer::from_seconds(duration, TimerMode::Repeating),
         }
     }
 
     /// Creates a Ticker for countdown purposes.  Pass in the desired countdown duration as a number of seconds to pass.
     ///
-    /// Valid countdown durations are 1 to 99 (pass 10 in for a 10 second countdown).  **Values outside
-    /// this range will cause a panic.**
+    /// Valid countdown durations are 1 to 99 (pass 10 in for a 10 second countdown); inclusive range.
+    /// **Values outside this range will cause a panic.**
     ///
     /// The start_value for Tickers that use this constructor is calculated by (100 - INSERT_VALUE_YOU_PASS_IN_HERE).
     pub fn new_countdown(duration: i8) -> Self {
 
-        assert!(duration >= 1 && duration <= 99, "Duration must be between 1 and 99. Got {}.", duration);
+        // Panic Evaluation
+        assert!(duration >= 1 && duration <= 99, "Duration must be between 1 and 99 (inclusive). Got {}.", duration);
 
         let start = 100 - duration;
         Self {
             start_value:    start,
             current_value:  start,
-            digit:          start.abs() % 10,
+            digit:          start % 10,
             timer:          Timer::from_seconds(1.0, TimerMode::Repeating),
         }
     }
@@ -98,18 +107,11 @@ impl Ticker {
         self.start_value
     }
 
-    /// Returns the total amount of time that has passed from the start_value.  This can technically return
-    /// misleading values depending on how start_value and current_value are manipulated.
+    /// Returns the difference between current_value and start_value.
     ///
-    /// If 5 seconds is added to the current_value, then 5 seconds also gets increased to the elapsed time.
-    /// If 5 seconds is reduced from the current_value, then 5 seconds is reduced from the elapsed time.
-    ///
-    /// If start_value is set to a different value, then the elapsed time gets completely changed.
-    ///
-    /// The elapsed value is always positive for sanity reasons.  Use is_above_start and is_below_start
-    /// to determine where your current_value sits against start_value.
-    pub fn get_elapsed_value(&self) -> i8 {
-        ((self.current_value as i16) - (self.start_value as i16)).abs() as i8       // Have to cast a bit extra due to the possibility that start value is i8::MIN (-128 flipping to 128 is out of i8 range).
+    /// RESULT = CURRENT_VALUE - START_VALUE
+    pub fn get_distance_from_start(&self) -> i8 {
+        self.current_value - self.start_value
     }
 
     /// Will return 0 if the elapsed value is greater than or equal to the start value.
@@ -169,7 +171,7 @@ impl Ticker {
     /// Both start_value and current_value have setters to allow for time manipulation shenanigans.  If an
     /// event were to occur and someone wanted to drastically alter how time worked then they can use the
     /// setters to make some interesting mechanics.
-    pub fn set_current_value(&mut self, value: i8) {
+    pub fn set_current_value(&mut self, value: isize) {
         self.current_value = value;
     }
 
@@ -178,7 +180,7 @@ impl Ticker {
     /// Both start_value and current_value have setters to allow for time manipulation shenanigans.  If an
     /// event were to occur and someone wanted to drastically alter how time worked then they can use the
     /// setters to make some interesting mechanics.
-    pub fn set_start_value(&mut self, value: i8) {
+    pub fn set_start_value(&mut self, value: isize) {
         self.start_value = value;
     }
 
@@ -198,19 +200,19 @@ impl Ticker {
     /// Digit is always to reflect current_value's ones-place.
     pub fn reset(&mut self) {
         self.current_value = self.start_value;
-        self.digit = (self.current_value as i16).abs() as i8 % 10;      // Have to cast a bit extra due to the possibility that start value is i8::MIN (-128 flipping to 128 is out of i8 range).
+        self.digit = self.current_value.abs() % 10;
     }
 
     /// Adds to the start_value of the ticker by the passed value.  Can take in negatives for subtraction.
     ///
-    /// Will not let the result of summing cause overflow or wrapping.
+    /// Will not let the result of summing cause overflow or wrapping; results will always be within -100 to 100.
     pub fn add_to_start(&mut self, value: isize) {
         self.start_value = (self.start_value as isize + value).clamp(-100, 100) as i8;
     }
 
     /// Adds to the current_value of the ticker by the passed value.  Can take in negatives for subtraction.
     ///
-    /// Will not let the result of summing cause overflow or wrapping.
+    /// Will not let the result of summing cause overflow or wrapping; results will always be within -100 to 100.
     pub fn add_to_current(&mut self, value: isize) {
         self.current_value = (self.current_value as isize + value).clamp(-100, 100) as i8;
     }
@@ -290,3 +292,13 @@ impl Ticker {
         }
     }
 }
+
+/// Determines if the value is within the acceptable range for the ticker.  Will cause a panic if the value
+fn check_value(value: isize) {
+
+    const MIN_VALUE: i8 = -100;
+    const MAX_VALUE: i8 = 100;
+
+    assert!(value >=  && value <= 100, "TICKER PANIC: Value must be between -100 and 100 (inclusive). Got {}.", value);
+}
+
