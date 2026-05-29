@@ -7,6 +7,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(TimeStructures {})
+
         .add_systems(Startup, (
             test_default,
             test_new,
@@ -51,7 +52,12 @@ fn fail(test: &str, reason: &str) {
 }
 
 fn check(test: &str, condition: bool, reason: &str) {
-    if condition { pass(test); } else { fail(test, reason); }
+    if condition {
+        pass(test);
+    }
+    else {
+        fail(test, reason);
+    }
 }
 
 // ─── Safety Note ─────────────────────────────────────────────────────────────
@@ -72,9 +78,9 @@ fn check(test: &str, condition: bool, reason: &str) {
 /// residual values.
 fn test_default() {
     let t = Ticker::default();
-    check("default::current_value is 0",        t.get_current_value() == 0,                    "expected 0");
-    check("default::start_value is 0",          t.get_start_value()   == 0,                    "expected 0");
-    check("default::digit is 0",                t.get_digit()         == 0,                    "expected 0");
+    check("default::current_value is 0",        t.get_current_value() == 0,                     "expected 0");
+    check("default::start_value is 0",          t.get_start_value()   == 0,                     "expected 0");
+    check("default::digit is 0",                t.get_digit()         == 0,                     "expected 0");
     check("default::state is Ticking",          t.get_state()         == &TickerStates::Ticking,"expected Ticking");
 }
 
@@ -88,12 +94,12 @@ fn test_new() {
     check("new::current_value matches start",   t.get_current_value() == 42,                    "expected 42");
     check("new::start_value set correctly",     t.get_start_value()   == 42,                    "expected 42");
     check("new::digit is ones-place of 42",     t.get_digit()         == 2,                     "expected 2");
-    check("new::state is Ticking",              t.get_state()         == &TickerStates::Ticking, "expected Ticking");
+    check("new::state is Ticking",              t.get_state()         == &TickerStates::Ticking,"expected Ticking");
 
     let t_neg = Ticker::new(-37);
-    check("new::negative start_value",          t_neg.get_current_value() == -37,                    "expected -37");
+    check("new::negative start_value",          t_neg.get_current_value() == -37,                   "expected -37");
     check("new::digit of -37 is 7 (abs %10)",   t_neg.get_digit()         == 7,                     "expected 7");
-    check("new::negative state is Ticking",     t_neg.get_state()         == &TickerStates::Ticking, "expected Ticking");
+    check("new::negative state is Ticking",     t_neg.get_state()         == &TickerStates::Ticking,"expected Ticking");
 
     let t_zero = Ticker::new(0);
     check("new::zero start_value",              t_zero.get_current_value() == 0, "expected 0");
@@ -111,6 +117,7 @@ fn test_new_with_duration() {
     check("new_with_duration::start_value",     t.get_start_value()   == 10,                    "expected 10");
     check("new_with_duration::digit",           t.get_digit()         == 0,                     "expected 0");
     check("new_with_duration::state is Ticking",t.get_state()         == &TickerStates::Ticking, "expected Ticking");
+
     // Timer duration cannot be directly inspected without ticking, so we just
     // confirm construction succeeds and values are correct.
     pass("new_with_duration::constructed without panic");
@@ -147,6 +154,7 @@ fn test_getters() {
     check("get_start_value",    t.get_start_value()   == 55,                    "expected 55");
     check("get_digit",          t.get_digit()         == 5,                     "expected 5");
     check("get_state",          t.get_state()         == &TickerStates::Ticking, "expected Ticking");
+
     // get_timer: just confirm it returns without panic
     let _ = t.get_timer();
     pass("get_timer::returns reference without panic");
@@ -205,6 +213,7 @@ fn test_add_to_start() {
 
     // Clamp at min (-100)
     t.add_to_start(-127);
+    t.add_to_start(-127);
     check("add_to_start::clamps at TICKER_MIN_VALUE (-100)", t.get_start_value() == -100, "expected -100");
 }
 
@@ -225,6 +234,7 @@ fn test_add_to_current() {
     check("add_to_current::clamps at max (100)", t.get_current_value() == 100, "expected 100");
 
     // Clamp at min
+    t.add_to_current(-127);
     t.add_to_current(-127);
     check("add_to_current::clamps at min (-100)", t.get_current_value() == -100, "expected -100");
 }
@@ -369,11 +379,11 @@ fn test_pause_unpause() {
     let mut t = Ticker::default();
 
     t.pause();
-    check("pause::timer is paused after pause()",       t.get_timer().paused(),                    "expected paused == true");
+    check("pause::timer is paused after pause()",       t.get_timer().is_paused(),                    "expected paused == true");
     check("pause::state is Paused after pause()",       t.get_state() == &TickerStates::Paused,    "expected Paused");
 
     t.unpause();
-    check("unpause::timer not paused after unpause()",  !t.get_timer().paused(),                   "expected paused == false");
+    check("unpause::timer not paused after unpause()",  !t.get_timer().is_paused(),                   "expected paused == false");
     check("unpause::state is Ticking after unpause()",  t.get_state() == &TickerStates::Ticking,   "expected Ticking");
 }
 
@@ -393,7 +403,7 @@ fn test_tick_loop() {
     let mut t = Ticker::new(0);
     t.tick(one_second);
     check("tick::increments current_value by 1 after one second", t.get_current_value() == 1, "expected 1");
-    check("tick::digit updated after tick",                        t.get_digit()         == 1, "expected 1");
+    check("tick::digit updated after tick",                       t.get_digit()         == 1, "expected 1");
 
     // Digit rollover: 9 -> 10, digit should become 0
     let mut t2 = Ticker::new(9);

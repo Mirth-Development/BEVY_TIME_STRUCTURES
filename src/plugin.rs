@@ -10,7 +10,8 @@ pub struct TimeStructures {}
 impl Plugin for TimeStructures {
     fn build(&self, app: &mut App) {
         app.register_type::<Ticker>();
-        app.register_type::<Chronolog>();
-        app.add_systems(First, (ticker_ticking, chronolog_ticking).chain());
+        // app.register_type::<Chronolog>();
+        app.add_systems(First, ticker_ticking);
+        // app.add_systems(First, chronolog_ticking);
     }
 }

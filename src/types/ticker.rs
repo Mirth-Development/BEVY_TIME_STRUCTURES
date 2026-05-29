@@ -222,14 +222,14 @@ impl Ticker {
     ///
     /// Will not let the result of summing cause overflow or wrapping; results will always be within [`TICKER_MIN_VALUE`] to [`TICKER_MAX_VALUE`] (inclusive).
     pub fn add_to_start(&mut self, value: i8) {
-        self.start_value = (self.start_value + value).clamp(TICKER_MIN_VALUE, TICKER_MAX_VALUE);
+        self.start_value = self.start_value.saturating_add(value).clamp(TICKER_MIN_VALUE, TICKER_MAX_VALUE);
     }
 
     /// Adds to the current_value of the ticker by the passed value.  Can take in negatives for subtraction.
     ///
     /// Will not let the result of summing cause overflow or wrapping; results will always be within [`TICKER_MIN_VALUE`] to [`TICKER_MAX_VALUE`] (inclusive).
     pub fn add_to_current(&mut self, value: i8) {
-        self.current_value = (self.current_value + value).clamp(TICKER_MIN_VALUE, TICKER_MAX_VALUE);
+        self.current_value = self.current_value.saturating_add(value).clamp(TICKER_MIN_VALUE, TICKER_MAX_VALUE);
     }
 
     /// Returns true if the current_value of the Ticker is below its start_value, false otherwise.
@@ -285,21 +285,25 @@ impl Ticker {
     /// Otherwise, I recommend the Chronolog structure.
     pub fn tick(&mut self, delta: std::time::Duration) {
 
-        self.timer.tick(delta);
+        // Will only tick a Ticker if its set to the Ticking state.
+        if self.state == TickerStates::Ticking {
 
-        let ticks: u32 = self.timer.times_finished_this_tick();
-        if ticks > 0 {
+            self.timer.tick(delta);
+            let ticks: u32 = self.timer.times_finished_this_tick();
 
-            let new_ticks: i8 = ticks as i8;
+            if ticks > 0 {
 
-            // Saturating add is present in case the amount of ticks received could cause for the addition
-            // on current_value to go beyond the i8::MAX.
-            if self.current_value.saturating_add(new_ticks) >= LOOP_POINT {
-                self.zero_out();
-            }
-            else {
-                self.current_value = self.current_value.saturating_add(new_ticks);
-                self.digit = self.current_value.abs() % 10;
+                let new_ticks: i8 = ticks as i8;
+
+                // Saturating add is present in case the amount of ticks received could cause for the addition
+                // on current_value to go beyond the i8::MAX.
+                if self.current_value.saturating_add(new_ticks) >= LOOP_POINT {
+                    self.zero_out();
+                }
+                else {
+                    self.current_value = self.current_value.saturating_add(new_ticks);
+                    self.digit = self.current_value.abs() % 10;
+                }
             }
         }
     }
