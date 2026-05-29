@@ -9,6 +9,12 @@ const COUNTDOWN_MIN_VALUE: i8 = 1;
 const COUNTDOWN_MAX_VALUE: i8 = TICKER_MAX_VALUE;
 const LOOP_POINT: i8 = 101;
 
+#[derive(Reflect, PartialEq, Debug)]
+pub enum TickerStates {
+    Ticking,
+    Paused,
+}
+
 /// By themselves, tickers can be used to create simple timers.  Although they are best used in conjunction
 /// as an inner element to a greater time structure to create some wicked tickety-tocking.
 ///
@@ -24,8 +30,9 @@ const LOOP_POINT: i8 = 101;
 pub struct Ticker {
     start_value: i8,
     current_value: i8,
-    digit: i8,
+    digit: i8,          // This is i8 and not u8 to avoid unnecessary typecasting inside the tick method.
     timer: Timer,
+    state: TickerStates,
 }
 
 impl Default for Ticker {
@@ -33,10 +40,11 @@ impl Default for Ticker {
     /// The default ticker counts up every second when its .tick method is used and all other fields start at 0.
     fn default() -> Self {
         Self {
-            start_value: 0,
-            current_value: 0,
-            digit: 0,
-            timer: Timer::from_seconds(1.0, TimerMode::Repeating),
+            start_value:    0,
+            current_value:  0,
+            digit:          0,
+            timer:          Timer::from_seconds(1.0, TimerMode::Repeating),
+            state:          TickerStates::Ticking,
         }
     }
 }
@@ -59,6 +67,7 @@ impl Ticker {
             current_value:  starting_value,
             digit:          starting_value.abs() % 10,
             timer:          Timer::from_seconds(1.0, TimerMode::Repeating),
+            state:          TickerStates::Ticking,
         }
     }
 
@@ -78,6 +87,7 @@ impl Ticker {
             current_value:  starting_value,
             digit:          starting_value.abs() % 10,
             timer:          Timer::from_seconds(duration, TimerMode::Repeating),
+            state:          TickerStates::Ticking,
         }
     }
 
@@ -98,6 +108,7 @@ impl Ticker {
             current_value:  starting_value,
             digit:          starting_value.abs() % 10,
             timer:          Timer::from_seconds(1.0, TimerMode::Repeating),
+            state:          TickerStates::Ticking,
         }
     }
 
@@ -155,6 +166,11 @@ impl Ticker {
         &self.timer
     }
 
+    /// Returns the active state that the Ticker is in.
+    pub fn get_state(&self) -> &TickerStates {
+        &self.state
+    }
+
     /// Allows manipulation of the current_value.  Passed value must be within acceptable range, if not a panic will occur.
     ///
     /// Both start_value and current_value have setters to allow for time manipulation shenanigans.  If an
@@ -184,11 +200,13 @@ impl Ticker {
     /// Pauses a timer within the ticker.
     pub fn pause(&mut self) {
         self.timer.pause();
+        self.state = TickerStates::Paused;
     }
 
     /// Unpauses a timer within a ticker.
     pub fn unpause(&mut self) {
         self.timer.unpause();
+        self.state = TickerStates::Ticking;
     }
 
     /// Will set the current_value to be equal to the start_value and the digit field of the Ticker
@@ -260,7 +278,7 @@ impl Ticker {
     /// in the systems of this plugin, then please note that you must run this each frame for time to move normally.
     ///
     /// # TICKING LOOPS AT [`LOOP_POINT`]
-    /// Tickers don't stop ticking.  Once the next tick addition hits [`LOOP_POINT`] it will zero out current_value using to_zero().
+    /// Tickers don't stop ticking.  Once the next tick addition hits [`LOOP_POINT`] it will zero out current_value.
     /// **This is crucial to understand.** Not recognizing that ticking loops on these structures will make for poor usage of them.
     /// Tickers are a building block element to making larger time structures or for highly compartmentalized timer usage.
     /// **If you're okay with values from [`TICKER_MIN_VALUE`] to [`TICKER_MAX_VALUE`] for your timers, then feel free to go ham with Tickers.**
