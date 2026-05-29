@@ -83,14 +83,14 @@ impl Ticker {
 
     /// Creates a Ticker for countdown purposes.  Pass in the desired countdown duration as a number of seconds to pass.
     ///
-    /// Valid countdown durations are [`COUNTDOWN_MIN_VALUE`] to [`COUNTDOWN_MAX_VALUE`] (pass 10 in for a 10 second countdown); inclusive range.
+    /// Valid countdown durations are [`COUNTDOWN_MIN_VALUE`] to [`COUNTDOWN_MAX_VALUE`] (pass 10 in for a 10-second countdown); inclusive range.
     /// **Values outside this range will cause a panic.**
     ///
     /// The start_value for Tickers that use this constructor is calculated by ([`LOOP_POINT`] - DURATION).
     pub fn new_with_countdown(duration: i8) -> Self {
 
         // Panic Evaluation
-        check_value(starting_value, COUNTDOWN_MIN_VALUE, COUNTDOWN_MAX_VALUE);
+        check_value(duration, COUNTDOWN_MIN_VALUE, COUNTDOWN_MAX_VALUE);
 
         let starting_value = LOOP_POINT - duration;
         Self {
@@ -204,14 +204,14 @@ impl Ticker {
     ///
     /// Will not let the result of summing cause overflow or wrapping; results will always be within [`TICKER_MIN_VALUE`] to [`TICKER_MAX_VALUE`] (inclusive).
     pub fn add_to_start(&mut self, value: i8) {
-        self.start_value = (self.start_value + value).clamp(MIN_VALUE, MAX_VALUE);
+        self.start_value = (self.start_value + value).clamp(TICKER_MIN_VALUE, TICKER_MAX_VALUE);
     }
 
     /// Adds to the current_value of the ticker by the passed value.  Can take in negatives for subtraction.
     ///
     /// Will not let the result of summing cause overflow or wrapping; results will always be within [`TICKER_MIN_VALUE`] to [`TICKER_MAX_VALUE`] (inclusive).
     pub fn add_to_current(&mut self, value: i8) {
-        self.current_value = (self.current_value + value).clamp(MIN_VALUE, MAX_VALUE);
+        self.current_value = (self.current_value + value).clamp(TICKER_MIN_VALUE, TICKER_MAX_VALUE);
     }
 
     /// Returns true if the current_value of the Ticker is below its start_value, false otherwise.
@@ -237,19 +237,19 @@ impl Ticker {
     ///
     /// Zero is a special number which is why it gets its own method.  Never let anybody tell you that
     /// zero isn't special - it's the almighty equalizer, destroyer, and splitter.
-    pub fn to_zero(&mut self) {
+    pub fn zero_out(&mut self) {
         self.current_value = 0;
         self.digit = 0;
     }
 
     /// Sets current_value to its minimum value (will alter the digit field to reflect this change).
-    pub fn to_min(&mut self) {
+    pub fn current_to_min(&mut self) {
         self.current_value = TICKER_MIN_VALUE;
         self.digit = self.current_value.abs() % 10;
     }
 
     /// Sets current_value to its maximum value (will alter the digit field to reflect this change).
-    pub fn to_max(&mut self) {
+    pub fn current_to_max(&mut self) {
         self.current_value = TICKER_MAX_VALUE;
         self.digit = self.current_value.abs() % 10;
     }
@@ -277,7 +277,7 @@ impl Ticker {
             // Saturating add is present in case the amount of ticks received could cause for the addition
             // on current_value to go beyond the i8::MAX.
             if self.current_value.saturating_add(new_ticks) >= LOOP_POINT {
-                self.to_zero();
+                self.zero_out();
             }
             else {
                 self.current_value = self.current_value.saturating_add(new_ticks);
