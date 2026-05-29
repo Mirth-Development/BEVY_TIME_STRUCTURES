@@ -3,8 +3,10 @@
 use bevy::prelude::*;
 
 // Constants
-const MIN_VALUE: i8 = -100;
-const MAX_VALUE: i8 = 100;
+const TICKER_MIN_VALUE: i8 = -100;
+const TICKER_MAX_VALUE: i8 = 100;
+const COUNTDOWN_MIN_VALUE: i8 = 1;
+const COUNTDOWN_MAX_VALUE: i8 = TICKER_MAX_VALUE;
 const LOOP_POINT: i8 = 101;
 
 /// By themselves, tickers can be used to create simple timers.  Although they are best used in conjunction
@@ -16,7 +18,7 @@ const LOOP_POINT: i8 = 101;
 /// Tickers don't stop ticking.  Once the next tick addition hits [`LOOP_POINT`] it will zero out current_value using to_zero().
 /// **This is crucial to understand.** Not recognizing that ticking loops on these structures will make for poor usage of them.
 /// Tickers are a building block element to making larger time structures or for highly compartmentalized timer usage.
-/// **If you're okay with values from [`MIN_VALUE`] to [`MAX_VALUE`] for your timers, then feel free to go ham with Tickers.**
+/// **If you're okay with values from [`TICKER_MIN_VALUE`] to [`TICKER_MAX_VALUE`] for your timers, then feel free to go ham with Tickers.**
 /// Otherwise, I recommend the Chronolog structure.
 #[derive(Component, Reflect, Debug)]
 pub struct Ticker {
@@ -43,14 +45,14 @@ impl Ticker {
 
     /// Develops a new Ticker using a passed value for its start_value.
     ///
-    /// Valid start values are [`MIN_VALUE`] to [`MAX_VALUE`] (inclusive).
+    /// Valid start values are [`TICKER_MIN_VALUE`] to [`TICKER_MAX_VALUE`] (inclusive).
     /// **Values outside this range will cause a panic.**
     ///
     /// When a second passes, the timer within the Ticker fires (increases current_value by 1 for each second that passes).
     pub fn new(starting_value: i8) -> Self {
 
         // Panic Evaluation
-        check_value(starting_value);
+        check_value(starting_value, TICKER_MIN_VALUE, TICKER_MAX_VALUE);
 
         Self {
             start_value:    starting_value,
@@ -62,14 +64,14 @@ impl Ticker {
 
     /// Develops a new Ticker using a passed value for its start_value.
     ///
-    /// Valid start values are [`MIN_VALUE`] to [`MAX_VALUE`] (inclusive).
+    /// Valid start values are [`TICKER_MIN_VALUE`] to [`TICKER_MAX_VALUE`] (inclusive).
     /// **Values outside this range will cause a panic.**
     ///
     /// When the passed duration in second(s) passes, the timer within the Ticker fires (increases current_value by 1 for each duration that passes).
     pub fn new_with_duration(starting_value: i8, duration: f32) -> Self {
 
         // Panic Evaluation
-        check_value(starting_value);
+        check_value(starting_value, TICKER_MIN_VALUE, TICKER_MAX_VALUE);
 
         Self {
             start_value:    starting_value,
@@ -81,14 +83,14 @@ impl Ticker {
 
     /// Creates a Ticker for countdown purposes.  Pass in the desired countdown duration as a number of seconds to pass.
     ///
-    /// Valid countdown durations are 1 to [`MAX_VALUE`] (pass 10 in for a 10 second countdown); inclusive range.
+    /// Valid countdown durations are [`COUNTDOWN_MIN_VALUE`] to [`COUNTDOWN_MAX_VALUE`] (pass 10 in for a 10 second countdown); inclusive range.
     /// **Values outside this range will cause a panic.**
     ///
     /// The start_value for Tickers that use this constructor is calculated by ([`LOOP_POINT`] - DURATION).
     pub fn new_with_countdown(duration: i8) -> Self {
 
         // Panic Evaluation
-        assert!(duration >= 1 && duration <= MAX_VALUE, "Duration must be between 1 and {} (inclusive). Got {}.", MAX_VALUE, duration);
+        check_value(starting_value, COUNTDOWN_MIN_VALUE, COUNTDOWN_MAX_VALUE);
 
         let starting_value = LOOP_POINT - duration;
         Self {
@@ -159,7 +161,10 @@ impl Ticker {
     /// event were to occur and someone wanted to drastically alter how time worked then they can use the
     /// setters to make some interesting mechanics.
     pub fn set_current_value(&mut self, value: i8) {
-        check_value(value);
+
+        // Panic Evaluation
+        check_value(value, TICKER_MIN_VALUE, TICKER_MAX_VALUE);
+
         self.current_value = value;
     }
 
@@ -169,7 +174,10 @@ impl Ticker {
     /// event were to occur and someone wanted to drastically alter how time worked then they can use the
     /// setters to make some interesting mechanics.
     pub fn set_start_value(&mut self, value: i8) {
-        check_value(value);
+
+        // Panic Evaluation
+        check_value(value, TICKER_MIN_VALUE, TICKER_MAX_VALUE);
+
         self.start_value = value;
     }
 
@@ -194,14 +202,14 @@ impl Ticker {
 
     /// Adds to the start_value of the ticker by the passed value.  Can take in negatives for subtraction.
     ///
-    /// Will not let the result of summing cause overflow or wrapping; results will always be within [`MIN_VALUE`] to [`MAX_VALUE`] (inclusive).
+    /// Will not let the result of summing cause overflow or wrapping; results will always be within [`TICKER_MIN_VALUE`] to [`TICKER_MAX_VALUE`] (inclusive).
     pub fn add_to_start(&mut self, value: i8) {
         self.start_value = (self.start_value + value).clamp(MIN_VALUE, MAX_VALUE);
     }
 
     /// Adds to the current_value of the ticker by the passed value.  Can take in negatives for subtraction.
     ///
-    /// Will not let the result of summing cause overflow or wrapping; results will always be within [`MIN_VALUE`] to [`MAX_VALUE`] (inclusive).
+    /// Will not let the result of summing cause overflow or wrapping; results will always be within [`TICKER_MIN_VALUE`] to [`TICKER_MAX_VALUE`] (inclusive).
     pub fn add_to_current(&mut self, value: i8) {
         self.current_value = (self.current_value + value).clamp(MIN_VALUE, MAX_VALUE);
     }
@@ -236,13 +244,13 @@ impl Ticker {
 
     /// Sets current_value to its minimum value (will alter the digit field to reflect this change).
     pub fn to_min(&mut self) {
-        self.current_value = MIN_VALUE;
+        self.current_value = TICKER_MIN_VALUE;
         self.digit = self.current_value.abs() % 10;
     }
 
     /// Sets current_value to its maximum value (will alter the digit field to reflect this change).
     pub fn to_max(&mut self) {
-        self.current_value = MAX_VALUE;
+        self.current_value = TICKER_MAX_VALUE;
         self.digit = self.current_value.abs() % 10;
     }
 
@@ -255,7 +263,7 @@ impl Ticker {
     /// Tickers don't stop ticking.  Once the next tick addition hits [`LOOP_POINT`] it will zero out current_value using to_zero().
     /// **This is crucial to understand.** Not recognizing that ticking loops on these structures will make for poor usage of them.
     /// Tickers are a building block element to making larger time structures or for highly compartmentalized timer usage.
-    /// **If you're okay with values from [`MIN_VALUE`] to [`MAX_VALUE`] for your timers, then feel free to go ham with Tickers.**
+    /// **If you're okay with values from [`TICKER_MIN_VALUE`] to [`TICKER_MAX_VALUE`] for your timers, then feel free to go ham with Tickers.**
     /// Otherwise, I recommend the Chronolog structure.
     pub fn tick(&mut self, delta: std::time::Duration) {
 
@@ -279,7 +287,7 @@ impl Ticker {
     }
 }
 
-/// Determines if the value is within the acceptable ticker range.  Will cause a panic if the value is out of the range.
-fn check_value(value: i8) {
-    assert!(value >= MIN_VALUE && value <= MAX_VALUE, "TICKER PANIC: Value must be between {} and {} (inclusive). Got {}.", MIN_VALUE, MAX_VALUE, value);
+/// Determines if the value is within the acceptable range that is passed in.  Will cause a panic if the value is out of the range.
+fn check_value(value: i8, minimum: i8, maximum: i8) {
+    assert!(value >= minimum && value <= maximum, "TICKER PANIC: Value must be between {} and {} (inclusive). Got {}.", minimum, maximum, value);
 }
