@@ -1479,6 +1479,7 @@ version = "0.2.0"
 dependencies = [
  "bevy",
  "mirth_engine_testing_tools",
+ "num-traits",
 ]
 
 [[package]]
@@ -3254,9 +3255,9 @@ dependencies = [
 
 [[package]]
 name = "mirth_engine_testing_tools"
-version = "0.0.2"
+version = "0.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bec04e039f3dfadd8612b2ca32e018fec5e91e20c19f96f2b65c42d63071f3e2"
+checksum = "fdc67551b747606464e8abbdb8d49036d9b3d745e90e87527a559be8dc57b373"
 dependencies = [
  "bevy",
 ]
