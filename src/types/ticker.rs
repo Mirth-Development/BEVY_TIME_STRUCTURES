@@ -386,16 +386,39 @@ impl<V: TickerValue, P: TickerPrecision> Ticker<V, P> {
         self.is_paused
     }
 
-    /// Returns whether or not a Ticker is set to loop upon reaching either `start_value` or `end_value`.
+    /// Returns true if a Ticker is set to loop back to `start_value` upon reaching either `start_value`
+    /// or `end_value`, false otherwise.
+    ///
+    /// #### Why Does a Ticker Loop Back to the Start Upon Hitting the Start?
+    /// Tickers are designed with the intent that you've made them to push to the `end_value`.  But at the same
+    /// time they're designed to allow you to change their tick direction at any given moment.  Because of this
+    /// it's possible to work from the `end_value` to the `start_value`, but to ensure the looping only works one way
+    /// and to account for the fact that direction changes at any given moment...
+    /// We must loop back to `start_value` even when we're hitting `start_value`.
+    ///
+    /// If you want a true looper, tick toward the `end_value`.  Just know you can change the
+    /// `current_value`'s direction to prevent ticking toward the `end_value` as an option (can make for
+    /// some cool mechanics).
     #[inline]
     pub fn is_looping(&self) -> bool {
         self.is_looping
     }
 
-    /// Returns whether or not a Ticker is set to tick its `current_value` up or down.
+    /// Returns true if a Ticker is set to tick its `current_value` up, false otherwise.
     #[inline]
     pub fn is_ticking_up(&self) -> bool {
         self.is_ticking_up
+    }
+
+    /// Returns true if a Ticker is set to tick its `current_value` down, false otherwise.
+    #[inline]
+    pub fn is_ticking_down(&self) -> bool {
+        if self.is_ticking_up == false {
+            true
+        }
+        else {
+            false
+        }
     }
 
     /// Returns whether or not this Ticker can fire more than one tick in a single .tick() call.
