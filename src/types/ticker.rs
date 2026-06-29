@@ -3,7 +3,6 @@
 use bevy::prelude::*;
 use std::fmt::Display;
 use std::ops::{Add, AddAssign, Div, Rem, RemAssign, Sub, SubAssign};
-use mirth_engine_testing_tools::{check_if_value_is_within_range};
 
 /// Used to apply a generic to the `start_value`, `current_value`, and `end_value` within the ticker type.
 ///
@@ -158,7 +157,9 @@ impl TickerPrecision for f64 {
 /// - **`Freezing`**
 ///     - The ticker begins **mutable**, but it will become **immutable** once current_value hits end_value.
 ///     - The ticker's stored_time is set to 0.0 when current_value hits end_value.  This ensures the time state is completely reset once it reaches the end.
-#[derive(PartialEq, Reflect, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "ticker_serialize", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(feature = "ticker_reflect", derive(Reflect), reflect(Clone, PartialEq))]
 pub enum TickerBehaviors {
     Looper,
     MutLooper,
@@ -305,7 +306,9 @@ pub enum TickerBehaviors {
 ///
 /// Due to the complexity of the .tick() method, it can not be properly summarized here. Go read its
 /// documentation if you'd like to know more about the method.
-#[derive(Component, Reflect, Debug)]
+#[derive(Component, Clone, Copy, Debug, PartialEq)]
+#[cfg_attr(feature = "ticker_serialize", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(feature = "ticker_reflect", derive(Reflect), reflect(Clone, PartialEq))]
 pub struct Ticker<V: TickerValue, P: TickerPrecision> {
     start_value:                V,
     current_value:              V,
@@ -1048,8 +1051,8 @@ impl<V: TickerValue, P: TickerPrecision> Ticker<V, P> {
     /// Will return a 0 if the digit doesn't exist.
     #[inline]
     pub fn digit_4(&self) -> i8 {
-        if self.current_value.absolute() >= V::from_i32(1000) {
-            ((self.current_value.absolute() / V::from_i32(1000)) % V::from_i32(10)).as_i8()
+        if self.current_value.absolute() >= V::from_i32(1_000) {
+            ((self.current_value.absolute() / V::from_i32(1_000)) % V::from_i32(10)).as_i8()
         }
         else {
             0
@@ -1063,8 +1066,8 @@ impl<V: TickerValue, P: TickerPrecision> Ticker<V, P> {
     /// Will return a 0 if the digit doesn't exist.
     #[inline]
     pub fn digit_5(&self) -> i8 {
-        if self.current_value.absolute() >= V::from_i32(10000) {
-            ((self.current_value.absolute() / V::from_i32(10000)) % V::from_i32(10)).as_i8()
+        if self.current_value.absolute() >= V::from_i32(10_000) {
+            ((self.current_value.absolute() / V::from_i32(10_000)) % V::from_i32(10)).as_i8()
         }
         else {
             0
@@ -1078,8 +1081,8 @@ impl<V: TickerValue, P: TickerPrecision> Ticker<V, P> {
     /// Will return a 0 if the digit doesn't exist.
     #[inline]
     pub fn digit_6(&self) -> i8 {
-        if self.current_value.absolute() >= V::from_i32(100000) {
-            ((self.current_value.absolute() / V::from_i32(100000)) % V::from_i32(10)).as_i8()
+        if self.current_value.absolute() >= V::from_i32(100_000) {
+            ((self.current_value.absolute() / V::from_i32(100_000)) % V::from_i32(10)).as_i8()
         }
         else {
             0
@@ -1093,8 +1096,8 @@ impl<V: TickerValue, P: TickerPrecision> Ticker<V, P> {
     /// Will return a 0 if the digit doesn't exist.
     #[inline]
     pub fn digit_7(&self) -> i8 {
-        if self.current_value.absolute() >= V::from_i32(1000000) {
-            ((self.current_value.absolute() / V::from_i32(1000000)) % V::from_i32(10)).as_i8()
+        if self.current_value.absolute() >= V::from_i32(1_000_000) {
+            ((self.current_value.absolute() / V::from_i32(1_000_000)) % V::from_i32(10)).as_i8()
         }
         else {
             0
@@ -1108,8 +1111,8 @@ impl<V: TickerValue, P: TickerPrecision> Ticker<V, P> {
     /// Will return a 0 if the digit doesn't exist.
     #[inline]
     pub fn digit_8(&self) -> i8 {
-        if self.current_value.absolute() >= V::from_i32(10000000) {
-            ((self.current_value.absolute() / V::from_i32(10000000)) % V::from_i32(10)).as_i8()
+        if self.current_value.absolute() >= V::from_i32(10_000_000) {
+            ((self.current_value.absolute() / V::from_i32(10_000_000)) % V::from_i32(10)).as_i8()
         }
         else {
             0
@@ -1123,8 +1126,8 @@ impl<V: TickerValue, P: TickerPrecision> Ticker<V, P> {
     /// Will return a 0 if the digit doesn't exist.
     #[inline]
     pub fn digit_9(&self) -> i8 {
-        if self.current_value.absolute() >= V::from_i32(100000000) {
-            ((self.current_value.absolute() / V::from_i32(100000000)) % V::from_i32(10)).as_i8()
+        if self.current_value.absolute() >= V::from_i32(100_000_000) {
+            ((self.current_value.absolute() / V::from_i32(100_000_000)) % V::from_i32(10)).as_i8()
         }
         else {
             0
@@ -1204,8 +1207,8 @@ impl<V: TickerValue, P: TickerPrecision> Ticker<V, P> {
     /// The `-1` sentinel allows you to differentiate between a digit that is absent and a digit that is simply `0`.
     #[inline]
     pub fn digit_4_with_dda(&self) -> i8 {
-        if self.current_value.absolute() >= V::from_i32(1000) {
-            ((self.current_value.absolute() / V::from_i32(1000)) % V::from_i32(10)).as_i8()
+        if self.current_value.absolute() >= V::from_i32(1_000) {
+            ((self.current_value.absolute() / V::from_i32(1_000)) % V::from_i32(10)).as_i8()
         }
         else {
             -1
@@ -1231,8 +1234,8 @@ impl<V: TickerValue, P: TickerPrecision> Ticker<V, P> {
     /// The `-1` sentinel allows you to differentiate between a digit that is absent and a digit that is simply `0`.
     #[inline]
     pub fn digit_5_with_dda(&self) -> i8 {
-        if self.current_value.absolute() >= V::from_i32(10000) {
-            ((self.current_value.absolute() / V::from_i32(10000)) % V::from_i32(10)).as_i8()
+        if self.current_value.absolute() >= V::from_i32(10_000) {
+            ((self.current_value.absolute() / V::from_i32(10_000)) % V::from_i32(10)).as_i8()
         }
         else {
             -1
@@ -1258,8 +1261,8 @@ impl<V: TickerValue, P: TickerPrecision> Ticker<V, P> {
     /// The `-1` sentinel allows you to differentiate between a digit that is absent and a digit that is simply `0`.
     #[inline]
     pub fn digit_6_with_dda(&self) -> i8 {
-        if self.current_value.absolute() >= V::from_i32(100000) {
-            ((self.current_value.absolute() / V::from_i32(100000)) % V::from_i32(10)).as_i8()
+        if self.current_value.absolute() >= V::from_i32(100_000) {
+            ((self.current_value.absolute() / V::from_i32(100_000)) % V::from_i32(10)).as_i8()
         }
         else {
             -1
@@ -1285,8 +1288,8 @@ impl<V: TickerValue, P: TickerPrecision> Ticker<V, P> {
     /// The `-1` sentinel allows you to differentiate between a digit that is absent and a digit that is simply `0`.
     #[inline]
     pub fn digit_7_with_dda(&self) -> i8 {
-        if self.current_value.absolute() >= V::from_i32(1000000) {
-            ((self.current_value.absolute() / V::from_i32(1000000)) % V::from_i32(10)).as_i8()
+        if self.current_value.absolute() >= V::from_i32(1_000_000) {
+            ((self.current_value.absolute() / V::from_i32(1_000_000)) % V::from_i32(10)).as_i8()
         }
         else {
             -1
@@ -1312,8 +1315,8 @@ impl<V: TickerValue, P: TickerPrecision> Ticker<V, P> {
     /// The `-1` sentinel allows you to differentiate between a digit that is absent and a digit that is simply `0`.
     #[inline]
     pub fn digit_8_with_dda(&self) -> i8 {
-        if self.current_value.absolute() >= V::from_i32(10000000) {
-            ((self.current_value.absolute() / V::from_i32(10000000)) % V::from_i32(10)).as_i8()
+        if self.current_value.absolute() >= V::from_i32(10_000_000) {
+            ((self.current_value.absolute() / V::from_i32(10_000_000)) % V::from_i32(10)).as_i8()
         }
         else {
             -1
@@ -1339,8 +1342,8 @@ impl<V: TickerValue, P: TickerPrecision> Ticker<V, P> {
     /// The `-1` sentinel allows you to differentiate between a digit that is absent and a digit that is simply `0`.
     #[inline]
     pub fn digit_9_with_dda(&self) -> i8 {
-        if self.current_value.absolute() >= V::from_i32(100000000) {
-            ((self.current_value.absolute() / V::from_i32(100000000)) % V::from_i32(10)).as_i8()
+        if self.current_value.absolute() >= V::from_i32(100_000_000) {
+            ((self.current_value.absolute() / V::from_i32(100_000_000)) % V::from_i32(10)).as_i8()
         }
         else {
             -1
@@ -1695,7 +1698,7 @@ impl<V: TickerValue, P: TickerPrecision> Ticker<V, P> {
     // ###################################### HELPER METHODS ######################################## //
     /// Returns true if the current behavior of the ticker is mutable, otherwise false.
     #[inline]
-    fn is_mutable(&self) -> bool {
+    pub fn is_mutable(&self) -> bool {
         match self.behavior {
             TickerBehaviors::Looper     => false,
             TickerBehaviors::MutLooper  => true,
@@ -1705,4 +1708,26 @@ impl<V: TickerValue, P: TickerPrecision> Ticker<V, P> {
         }
     }
     // ############################################################################################## //
+}
+
+
+/// Checks if a value falls within the provided minimum and maximum range (inclusive).
+///
+/// Accepts any type that implements [`PartialOrd`] and [`Display`], meaning
+/// all numeric primitives, [`char`], [`String`], and [`&str`] are valid inputs.
+///
+/// # Panics
+/// Panics if the value is outside the provided range.
+///
+/// # Example
+/// ```
+/// check_value(5, 1, 10);    // Passes
+/// check_value(15, 1, 10);   // Panics
+/// ```
+fn check_if_value_is_within_range<T: PartialOrd + Display>(value: T, minimum: T, maximum: T) {
+    assert!(
+        value >= minimum && value <= maximum,
+        "{}[FAIL]{} Ticker value must be between {} and {} (inclusive). Got {}.",
+        "\x1b[31m", "\x1b[0m", minimum, maximum, value
+    );
 }

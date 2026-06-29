@@ -2,7 +2,7 @@
 // Imports
 use bevy::prelude::*;
 use mirth_engine_testing_tools::{check_condition, TestColors, TestSet};
-use bevy_time_structures::{Ticker, Tickers};
+use mirth_engine_tickers::Tickers;
 
 fn main() {
     App::new()
