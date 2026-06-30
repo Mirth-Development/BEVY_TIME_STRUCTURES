@@ -1,7 +1,7 @@
 
-use bevy::prelude::*;
-use crate::ticker::{TickerPrecision, TickerValue};
-use crate::types::Ticker;
+use bevy_ecs::prelude::*;
+use bevy_time::Time;
+use crate::types::ticker_type::*;
 
 /// Will loop through queried tickers and tick them for every time this Bevy system is used.
 ///

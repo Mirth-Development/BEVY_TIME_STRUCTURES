@@ -1,6 +1,7 @@
 
 // Imports
-use bevy::prelude::*;
+use bevy_ecs::prelude::*;
+use bevy_reflect::Reflect;
 use std::fmt::Display;
 use std::ops::{Add, AddAssign, Div, Rem, RemAssign, Sub, SubAssign};
 

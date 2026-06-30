@@ -1,6 +1,6 @@
 
 // System Files
-pub mod ticker;
+pub mod ticker_systems;
 
 // Systems to bubble up for usage.
-pub use ticker::tick_tickers;
+pub use ticker_systems::*;

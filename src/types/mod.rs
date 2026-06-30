@@ -1,6 +1,6 @@
 
 // Type Files
-pub mod ticker;
+pub mod ticker_type;
 
 // Types to bubble up for usage.
-pub use ticker::*;
+pub use ticker_type::*;

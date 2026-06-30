@@ -1,14 +1,14 @@
 
 // Imports
-use bevy::prelude::*;
-use mirth_engine_tickers::Tickers;
+use bevy_app::prelude::*;
+use bevy_ecs::prelude::*;
+use mirth_engine_tickers::*;
 #[cfg(feature = "ticker_testing")]
 use mirth_engine_testing_tools::{check_condition, TestColors, TestSet};
 
 fn main() {
     App::new()
 
-        .add_plugins(DefaultPlugins)
         .add_plugins(Tickers{})
 
         // One and done tests that are NOT intended to panic.

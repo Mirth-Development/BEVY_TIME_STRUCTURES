@@ -1,6 +1,6 @@
 
 // Imports
-use bevy::prelude::*;
+use bevy_app::prelude::*;
 use crate::types::*;
 use crate::systems::*;
 
@@ -11,27 +11,25 @@ pub struct Tickers {}
 impl Plugin for Tickers {
     fn build(&self, app: &mut App) {
 
-        // ############################### TICKER FEATURES ###################################### //
-        // Types
-        #[cfg(feature = "ticker_type_i8_f32")]
+        #[cfg(feature = "ticker_reflect_i8_f32")]
         app.register_type::<Ticker<i8, f32>>();
 
-        #[cfg(feature = "ticker_type_i16_f32")]
+        #[cfg(feature = "ticker_reflect_i16_f32")]
         app.register_type::<Ticker<i16, f32>>();
 
-        #[cfg(feature = "ticker_type_i32_f32")]
+        #[cfg(feature = "ticker_reflect_i32_f32")]
         app.register_type::<Ticker<i32, f32>>();
 
-        #[cfg(feature = "ticker_type_i8_f64")]
+        #[cfg(feature = "ticker_reflect_i8_f64")]
         app.register_type::<Ticker<i8, f64>>();
 
-        #[cfg(feature = "ticker_type_i16_f64")]
+        #[cfg(feature = "ticker_reflect_i16_f64")]
         app.register_type::<Ticker<i16, f64>>();
 
-        #[cfg(feature = "ticker_type_i32_f64")]
+        #[cfg(feature = "ticker_reflect_i32_f64")]
         app.register_type::<Ticker<i32, f64>>();
 
-        // Systems
+        // Ticker Systems
         #[cfg(feature = "ticker_systems_i8_f32")]
         app.add_systems(First, tick_tickers::<i8, f32>);
 
@@ -49,14 +47,5 @@ impl Plugin for Tickers {
 
         #[cfg(feature = "ticker_systems_i32_f64")]
         app.add_systems(First, tick_tickers::<i32, f64>);
-        // ###################################################################################### //
-
-
-
-        // ############################### TICKERLOG FEATURES ################################### //
-        // Types
-
-        // Systems
-        // ###################################################################################### //
     }
 }
