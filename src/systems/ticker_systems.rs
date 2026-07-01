@@ -7,7 +7,7 @@ use crate::types::ticker_type::*;
 ///
 /// This tick system is based on Bevy's Time resource, and more specifically its delta.  Best
 /// used in Bevy's scheduler under a frame schedule (Update, First, Last, etcetera).
-pub fn tick_tickers<V: TickerValue, P: TickerPrecision>(
+pub(crate) fn tick_tickers<V: TickerValue, P: TickerPrecision>(
     time: Res<Time>,
     mut tickers: Query<&mut Ticker<V, P>>,
 ) {
